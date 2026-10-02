@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Examoura | Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+}
+
+/* ===== NAVBAR ===== */
+.navbar {
+    background: #111827;
+    border-bottom: 1px solid #1f2937;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 20px;
+    color: #38bdf8 !important;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    position: fixed;
+    background: #111827;
+    padding-top: 20px;
+    border-right: 1px solid #1f2937;
+}
+
+.sidebar a {
+    padding: 14px 20px;
+    display: block;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    background: #1e293b;
+    color: #38bdf8;
+    padding-left: 25px;
+}
+
+.sidebar .active {
+    background: #1e293b;
+    color: #38bdf8;
+    border-left: 4px solid #38bdf8;
+}
+
+/* ===== MAIN ===== */
+.main-content {
+    margin-left: 250px;
+    padding: 30px;
+}
+
+/* ===== CARDS ===== */
+.card-dark {
+    background: #1e293b;
+    color:#e2e8f0;
+    border: none;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    transition: 0.3s;
+}
+
+.card-dark:hover {
+    color:white;
+    transform: translateY(-5px);
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #6366f1, #22d3ee);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+input.form-control {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: white;
+}
+
+input.form-control:focus {
+    background: #0f172a;
+    color: white;
+    border-color: #38bdf8;
+    box-shadow: none;
+}
+
+.btn-primary {
+    background: #6366f1;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #4f46e5;
+}
+
+.btn-danger {
+    background: #ef4444;
+    border: none;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.form-control::placeholder {
+    color: #8ab4f8;
+    opacity: 1;
+}
+
+</style>
+</head>
+<body>
+
+<script>
+const user = JSON.parse(localStorage.getItem("loggedInUser"));
+if(!user || user.role !== "admin"){
+    window.location.href = "../index.html";
+}
+</script>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-dark px-4">
+    <span class="navbar-brand">🎓 Examoura Admin</span>
+    <div class="text-light">
+        <i class="bi bi-person-circle fs-5"></i>
+        <span class="ms-2">Admin</span>
+    </div>
+</nav>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <a href="#" class="active" onclick="showSection('dashboard', this)">
+        <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="#" onclick="showSection('create', this)">
+        <i class="bi bi-plus-circle"></i> Create Exam
+    </a>
+    <a href="#" onclick="showSection('manage', this)">
+        <i class="bi bi-pencil-square"></i> Manage Exams
+    </a>
+    <a href="#" onclick="showSection('view', this)">
+        <i class="bi bi-eye"></i> View Exams
+    </a>
+    <a href="admin_results.html" >
+        <i class="bi bi-bar-chart"></i> Results
+    </a>
+    <a href="#" onclick="logout()">
+        <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+
+    <!-- Dashboard -->
+    <div id="dashboardSection">
+        <h3 class="mb-4">Dashboard Overview</h3>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <h2 id="totalExams">0</h2>
+                    <p>Total Exams</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <h2 id="totalResults">0</h2>
+                    <p>Total Attempts</p>
+                </div>
+            </div>
+              <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <h2 >Activity</h2>
+                    <p>Admin Online</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create -->
+     <div id="createSection" style="display:none;">
+    <h3>Create Exam</h3>
+    <div class="card-dark mt-3 p-3">
+
+        <input type="text" id="examTitle" class="form-control mb-3 " placeholder="Exam Title">
+        <input type="number" id="duration" class="form-control mb-3" placeholder="Duration (seconds)">
+
+        <div id="questionsContainer"></div>
+
+        <button class="btn btn-secondary mb-3" onclick="addQuestion()"> + Add Question </button>
+        <br>
+        <button class="btn btn-primary" onclick="createExam()">Create Exam</button>
+
+    </div>
+</div>
+
+    
+
+    <!-- Manage -->
+    <div id="manageSection" style="display:none;">
+        <h3>Manage Exams</h3>
+        <div id="manageList" class="mt-3"></div>
+    </div>
+
+    <!-- View -->
+    <div id="viewSection" style="display:none;">
+        <h3>View Exams</h3>
+        <div id="viewList" class="mt-3"></div>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsSection" style="display:none;">
+        <h3>Results</h3>
+        <div id="resultsList" class="mt-3"></div>
+    </div>
+
+</div>
+
+<script>
+function showSection(section, element){
+    document.querySelectorAll(".sidebar a").forEach(a=>a.classList.remove("active"));
+    if(element) element.classList.add("active");
+
+    document.querySelectorAll(".main-content > div").forEach(div=>div.style.display="none");
+    document.getElementById(section+"Section").style.display="block";
+
+    if(section==="dashboard") loadDashboard();
+    if(section==="manage") loadManage();
+    if(section==="view") loadView();
+    if(section==="results") loadResults();
+}
+
+let questionCount = 0;
+
+function addQuestion() {
+    questionCount++;
+
+    const container = document.getElementById("questionsContainer");
+
+    const questionHTML = `
+        <div class="card-dark p-3 mb-3">
+            <h5>Question ${questionCount}</h5>
+            <input type="text" id="question${questionCount}" class="form-control mb-2" placeholder="Enter Question">
+
+            <input type="text" id="q${questionCount}o1" class="form-control mb-2" placeholder="Option 1">
+            <input type="text" id="q${questionCount}o2" class="form-control mb-2" placeholder="Option 2">
+            <input type="text" id="q${questionCount}o3" class="form-control mb-2" placeholder="Option 3">
+            <input type="text" id="q${questionCount}o4" class="form-control mb-2" placeholder="Option 4">
+
+            <select id="answer${questionCount}" class="form-control">
+                <option value="0">Correct: Option 1</option>
+                <option value="1">Correct: Option 2</option>
+                <option value="2">Correct: Option 3</option>
+                <option value="3">Correct: Option 4</option>
+            </select>
+        </div>
+    `;
+
+    container.innerHTML += questionHTML;
+}
+
+function createExam(){
+    const title = document.getElementById("examTitle").value;
+    const duration = parseInt(document.getElementById("duration").value);
+
+    if(!title || !duration){
+        alert("All fields required!");
+        return;
+    }
+
+    if(questionCount === 0){
+        alert("Add at least one question!");
+        return;
+    }
+
+    let questions = [];
+
+    for(let i = 1; i <= questionCount; i++){
+        const q = document.getElementById("question"+i).value;
+        const o1 = document.getElementById("q"+i+"o1").value;
+        const o2 = document.getElementById("q"+i+"o2").value;
+        const o3 = document.getElementById("q"+i+"o3").value;
+        const o4 = document.getElementById("q"+i+"o4").value;
+        const answer = parseInt(document.getElementById("answer"+i).value);
+
+        if(!q || !o1 || !o2 || !o3 || !o4){
+            alert("Please fill all question fields!");
+            return;
+        }
+
+        questions.push({
+            q: q,
+            options: [o1, o2, o3, o4],
+            answer: answer
+        });
+    }
+
+    const exams = JSON.parse(localStorage.getItem("exams")) || [];
+
+    exams.push({
+        id: Date.now(),
+        title: title,
+        duration: duration,
+        questions: questions
+    });
+
+    localStorage.setItem("exams", JSON.stringify(exams));
+
+    alert("Exam Created Successfully!");
+
+    // Reset form
+    document.getElementById("examTitle").value = "";
+    document.getElementById("duration").value = "";
+    document.getElementById("questionsContainer").innerHTML = "";
+    questionCount = 0;
+
+    loadDashboard();
+}
+
+function loadDashboard(){
+    const exams = JSON.parse(localStorage.getItem("exams")) || [];
+    const results = JSON.parse(localStorage.getItem("results")) || [];
+
+    document.getElementById("totalExams").innerText = exams.length;
+    document.getElementById("totalResults").innerText = results.length;
+}
+
+function loadManage(){
+    const exams = JSON.parse(localStorage.getItem("exams")) || [];
+    const box = document.getElementById("manageList");
+
+    let html="";
+    exams.forEach((exam,i)=>{
+        html+=`
+            <div class="card-dark mb-2 d-flex justify-content-between">
+                ${exam.title}
+                <button class="btn btn-danger btn-sm" onclick="deleteExam(${i})">Delete</button>
+            </div>
+        `;
+    });
+
+    box.innerHTML = html || "No exams found.";
+}
+
+function deleteExam(index){
+    const exams = JSON.parse(localStorage.getItem("exams")) || [];
+    exams.splice(index,1);
+    localStorage.setItem("exams", JSON.stringify(exams));
+    loadManage();
+    loadDashboard();
+}
+
+function loadView(){
+    const exams = JSON.parse(localStorage.getItem("exams")) || [];
+    const box=document.getElementById("viewList");
+
+    let html="";
+    exams.forEach(exam=>{
+        html+=`
+            <div class="card-dark mb-2">
+                <strong>${exam.title}</strong><br>
+                Duration: ${exam.duration}s<br>
+                Questions: ${exam.questions.length}
+            </div>
+        `;
+    });
+
+    box.innerHTML = html || "No exams available.";
+}
+
+function loadResults(){
+    const results = JSON.parse(localStorage.getItem("results")) || [];
+    const box=document.getElementById("resultsList");
+
+    let html="";
+    results.forEach(r=>{
+        html+=`
+            <div class="card-dark mb-2">
+                ${r.examTitle}<br>
+                Student: ${r.email}<br>
+                Score: ${r.score}/${r.total}
+            </div>
+        `;
+    });
+
+    box.innerHTML = html || "No results yet.";
+}
+
+function logout(){
+    localStorage.removeItem("loggedInUser");
+    window.location.href="index.html";
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>

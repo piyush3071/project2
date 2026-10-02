@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Student Results</title>
+    <style>
+        body {
+            background: #0f1c2e;
+            color: white;
+            font-family: Arial;
+            padding: 30px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #16243a;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #1f2e45;
+            text-align: center;
+        }
+
+        th {
+            background: #1f2e45;
+        }
+
+        .pass {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .fail {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        button {
+            margin-top: 20px;
+            background: #6366f1;
+            padding: 10px 20px;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+
+<h2>All Students Results</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Student</th>
+            <th>Exam</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody id="resultsTable"></tbody>
+</table>
+
+<button onclick="goDashboard()">Back to Admin Dashboard</button>
+
+<script>
+const results = JSON.parse(localStorage.getItem("allResults")) || [];
+const table = document.getElementById("resultsTable");
+
+if(results.length === 0){
+    table.innerHTML = `<tr><td colspan="6">No Results Available</td></tr>`;
+} else {
+    results.forEach(r => {
+        table.innerHTML += `
+            <tr>
+                <td>${r.student}</td>
+                <td>${r.examTitle}</td>
+                <td>${r.score} / ${r.total}</td>
+                <td>${r.percentage}%</td>
+                <td class="${r.status === "Pass" ? "pass" : "fail"}">${r.status}</td>
+                <td>${r.date}</td>
+            </tr>
+        `;
+    });
+}
+
+function goDashboard(){
+    window.location.href = "admin_dashboard.html";
+}
+</script>
+
+</body>
+</html>

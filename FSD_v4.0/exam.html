@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam</title>
+    <style>
+        body {
+            background: #0f1c2e;
+            color: white;
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        .exam-container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .question-box {
+            background: #16243a;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #6366f1;
+            padding: 10px 20px;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4f46e5;
+        }
+
+        #timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f87171;
+        }
+    </style>
+</head>
+<body>
+
+<div class="exam-container">
+    <h2 id="examTitle"></h2>
+    <p>Time Left: <span id="timer"></span> seconds</p>
+
+    <div id="questionsContainer"></div>
+
+    <button onclick="submitExam()">Submit Exam</button>
+</div>
+
+<script>
+const exams = JSON.parse(localStorage.getItem("exams")) || [];
+const examId = localStorage.getItem("currentExam");
+
+console.log("All Exams:", exams);
+console.log("Current Exam ID:", examId);
+
+const exam = exams.find(e => String(e.id) === String(examId));
+
+if (!exam) {
+    alert("Exam not found! Please start exam again.");
+    window.location.href = "student_dashboard.html";
+    throw new Error("Exam not found");
+}
+
+document.getElementById("examTitle").innerText = exam.title;
+
+// ---------------- TIMER ----------------
+let timeLeft = parseInt(exam.duration);
+document.getElementById("timer").innerText = timeLeft;
+
+let timer = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timer").innerText = timeLeft;
+
+    if (timeLeft <= 0) {
+        clearInterval(timer);
+        submitExam();
+    }
+}, 1000);
+
+// ---------------- LOAD QUESTIONS ----------------
+const container = document.getElementById("questionsContainer");
+
+exam.questions.forEach((q, index) => {
+
+    let optionsHTML = "";
+
+    q.options.forEach((opt, i) => {
+        optionsHTML += `
+            <label>
+                <input type="radio" name="q${index}" value="${i}">
+                ${opt}
+            </label><br>
+        `;
+    });
+
+    container.innerHTML += `
+        <div class="question-box">
+            <h4>${index + 1}. ${q.q}</h4>
+            ${optionsHTML}
+        </div>
+    `;
+});
+// ---------------- SUBMIT ----------------
+function submitExam() {
+    clearInterval(timer);
+
+    let score = 0;
+
+    exam.questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        if (selected && parseInt(selected.value) === parseInt(q.answer)) {
+            score++;
+        }
+    });
+
+    const percentage = ((score / exam.questions.length) * 100).toFixed(2);
+
+    const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    const studentEmail = loggedInUser ? loggedInUser.email : "Unknown";
+
+    const resultData = {
+        email: studentEmail,
+        examTitle: exam.title,
+        score: score,
+        total: exam.questions.length,
+        percentage: percentage,
+        status: percentage >= 40 ? "Pass" : "Fail",
+        date: new Date().toLocaleString()
+    };
+
+    let allResults = JSON.parse(localStorage.getItem("allResults")) || [];
+    allResults.push(resultData);
+    localStorage.setItem("allResults", JSON.stringify(allResults));
+
+    localStorage.setItem("lastResult", JSON.stringify(resultData));
+
+    window.location.href = "student_dashboard.html";
+}
+
+</script>
+
+</body>
+</html>

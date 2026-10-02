@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Exam</title>
+    <style>
+        body {
+            background: #1e1e2f;
+            color: white;
+            font-family: Arial;
+        }
+
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: #2c2c3e;
+            border: none;
+            border-radius: 5px;
+            color: white;
+        }
+
+        .question-box {
+            background: #2c2c3e;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+        }
+
+        button {
+            background: #6c63ff;
+            padding: 12px;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #574bff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Create MCQ Exam</h2>
+
+    <label>Exam Title</label>
+    <input type="text" id="title">
+
+    <label>Duration (minutes)</label>
+    <input type="number" id="duration">
+
+    <div id="questions"></div>
+
+    <button onclick="addQuestion()">Add Question</button>
+    <br><br>
+    <button onclick="saveExam()">Save Exam</button>
+</div>
+
+<script>
+let questionCount = 0;
+
+function addQuestion() {
+    questionCount++;
+
+    let html = `
+        <div class="question-box">
+            <h3>Question ${questionCount}</h3>
+            <textarea id="question${questionCount}" placeholder="Enter question"></textarea>
+
+            <input type="text" id="q${questionCount}o1" placeholder="Option 1">
+            <input type="text" id="q${questionCount}o2" placeholder="Option 2">
+            <input type="text" id="q${questionCount}o3" placeholder="Option 3">
+            <input type="text" id="q${questionCount}o4" placeholder="Option 4">
+
+            <select id="correct${questionCount}">
+                <option value="1">Correct Option 1</option>
+                <option value="2">Correct Option 2</option>
+                <option value="3">Correct Option 3</option>
+                <option value="4">Correct Option 4</option>
+            </select>
+        </div>
+    `;
+
+    document.getElementById("questions").innerHTML += html;
+}
+
+function saveExam() {
+    let title = document.getElementById("title").value;
+    let duration = document.getElementById("duration").value;
+
+    let questions = [];
+
+    for (let i = 1; i <= questionCount; i++) {
+        questions.push({
+            question: document.getElementById("question" + i).value,
+            options: [
+                document.getElementById("q" + i + "o1").value,
+                document.getElementById("q" + i + "o2").value,
+                document.getElementById("q" + i + "o3").value,
+                document.getElementById("q" + i + "o4").value
+            ],
+            correct: document.getElementById("correct" + i).value
+        });
+    }
+
+    let exam = {
+        id: Date.now(),
+        title: title,
+        duration: duration,
+        questions: questions
+    };
+
+    let exams = JSON.parse(localStorage.getItem("exams")) || [];
+    exams.push(exam);
+    localStorage.setItem("exams", JSON.stringify(exams));
+
+    alert("Exam Created Successfully!");
+    window.location.href = "admin_dashboard.html";
+}
+</script>
+
+</body>
+</html>
